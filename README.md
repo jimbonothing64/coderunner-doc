@@ -1,13 +1,16 @@
 ## Scratchpad UI
-The **Scratchpad UI** functions like the **Ace UI** (hopefully a familair face by now), except there are two spots to enter text and it's also possible to run code without using the check button. The first editor is identical to the **Ace UI**. The second editor can be shown by clicking the **Scratchpad** button, this also includes a **Run Button** and a **Prefix with Answer Checkbox**. The second editor is independant: code entered is not included when marking submissions. Students can use the UI in one of two ways:
+The **Scratchpad UI** functions like the **Ace UI** (hopefully a familair face by now), except there are two editors for code entry. Additionaly, it's also possible to run code 'in-browser' without using the check button. The first editor is identical to the **Ace UI**; the code in this area is submited when Check is clicked. The second editor can be shown by clicking the **Scratchpad** button, this also includes a **Run Button** and a **Prefix with Answer Checkbox**. The second editor is independant: code entered is not included when marking submissions. Students can use the UI in one of two ways:
  - When prefix with answer is not checked, only the code in the scratchpad is run -- allowing for a rough working spot to quickly check the result of code.
  - When the prefix anser is checked, the code in the scratchpad is appended to the end of their answer -- allowing testing in-browser, without using check.
  
+ It may be helpful to think of the scratchpad like a try-it box (see ace-inline-filter) with access to the question's answer code.
+ 
+ ### Basic Customization
  The names of all buttons are changable via UI paramiters.
  
- By defualt, clicking Run will provide an escaped textual output. In some cases, e.g. programming HTML, this is not very useful. You can allow HTML output by setting `sp_html_out` to `true`.
+ By defualt, clicking Run will provide an escaped textual output. In some cases, e.g. programming HTML, this may not be desired. You can allow raw HTML output by setting `sp_html_out` to `true`.
 
-### Advanced Use: Wrappers
+### Advanced Customization: Wrappers
 Sometimes this defualt configuration won't be flexible enough... What if you want use a language installed on jobe but not supported by codeurnner, or to display Matplotlib graphs using Run? This is where you'd use a wrapper to do your bidding.
 
 A wrapper is a program used to 'wrap' your code up before it gets run using the sandbox. You can write a program to insert the answer code and scratchpad code into, using `{{ Student_Code* }}` and `{{ Scratchpad_Code }}` respectively. When the prefifix checkbox is unchecked `{{ Student_Code* }}` is replaced with the empty string `''`.  For example, the defualt configuration can be thought of as the following wrapper:
@@ -44,19 +47,21 @@ exec_command = ["./__tester__"]
  output = subprocess.check_output(exec_command, universal_newlines=True)
 print(output)
  ```
-To expand on this more, you could wrap the scratchpad code inside a main function with the ansewr code outside, this might be useful for the first questions in a C course -- it would remove one thing for a beginer to remember.
+To expand on this more, you could wrap the scratchpad code inside a main function with the ansewr code outside, this might be useful for the first questions in a C course -- by removing complexity for the first questions and lowering exploration inertia.
 
-Ealier, the `sp_html_out` paramiter was discussed. In conjunction with a wrapper this can be used to display graphical/non-textual output in the output box. If we allow HTML output, then write a wrapper that runs the code and grabs the image, printing it as a data URI inside an HTML `<img>` tag.
+Earlier, the `sp_html_out` paramiter was discussed. In conjunction with a wrapper this can be used to display graphical/non-textual output in the output box. If we allow HTML output, then write a wrapper that runs the code and grabs the image, printing it as a data URI inside an HTML `<img>` tag.
 
  
 
-### Params Summary
+### UI Paramiters Reference
 
-- `sp_name`: the display name of the scratchpad
-- `sp_button_name`: the run button text to display
-- `sp_prefix_name`: the prefix answer check text to display
-- `sp_ace_lang`: the language used inside in the scratchpad when answering the question, this controlls syntax highlighting
+- `sp_name`: the display name of the scratchpad (the button used to hide/unhide the scratchpad)
+- `sp_button_name`: the run button text
+- `sp_prefix_name`: the prefix answer check-box text
+- `sp_ace_lang`: the language used inside in the scratchpad when answering the question (this controlls syntax highlighting)
 - `sp_run_lang`: the langauge used to run code when the run button is clicked, this should be the langauge your wrapper is written in (if applicable)
-- `sp_run_wrapper`: 
-- `sp_run_wrapper_globalextra`: set to `true` if you want 
+- `sp_run_wrapper`: the wrapper to be used by the run button:
+    - setting as `___GLOBAL_EXTRA___` will use text in global extra as the wrapper
+    - otherwise, the string in this paramiter will be used.
+- `sp_run_wrapper_globalextra`: set to `true` if you want *(this one could be redundant if using `___GLOBAL_EXTRA___` in run wrapper param)*
 - `sp_html_out`: when true, the output from run will be raw HTML instead of textual
