@@ -3,13 +3,51 @@ The **Scratchpad UI** functions like the **Ace UI** (hopefully a familair face b
  - When prefix with answer is not checked, only the code in the scratchpad is run
  - When the prefix anser is checked, the code in the scratchpad is appended to the end of their answer, allowing testing in-browser -- without using check.
  
+ The names of all buttons are changable via UI paramiters.
+ 
  By defualt, clicking Run will provide an escaped textual output. In some cases, e.g. programming HTML, this is not very useful. You can allow HTML output by setting `sp_html_out` to `true`.
 
- Another case
+### Advanced use
+Sometimes this defualt configuration won't be flexible enough... What if you want use a language installed on jobe but not supported by codeurnner, or to display Matplotlib graphs using Run? This is where you'd use a wrapper to do your bidding.
+
+A wrapper is a program used to 'wrap' your code up before it gets run using the sandbox. You write a program to go around the answer code `{{ Student_Code* }}` and the test code `{{ Scratchpad_Code }}`  The defualt configuration can be thought of as the following wrapper:
+```
+{{ Student_Code* }}
+{{ Scratchpad_Code }}
+```
+*included only if prefix ticked, otherwise empty string
+
+To have some fun, why not make the scratchpad code repeat ten times per Run using python...
+```
+{{ Student_Code }}
+for i in range(10):
+    exec('''{{ Scratchpad_Code }}''')
+```
+
+ You can set the Run language, using `sp_run_lang`, this changes the language sent to the sandbox service used to run the wrapper. This means you can write your wrapper in a different language to the question. To the person answering the question this would be invisible. Below is an example of how you could run C using Python as your run language (see the multi-language question for further insparation).
+ ```
+ import subprocess
+ 
+student_answer = """{{ Student_Code }}"""
+test_code = """{{ Student_Code }}"""
+all_code = student_answer + '\n' + test_code
+ filename = '__tester__.c
+ with open(filename, "w") as src:
+    print(all_code, file=src)
+
+cflags = "-std=c99 -Wall -Werror"
+return_code = subprocess.call("gcc {0} -o __tester__ __tester__.c".format(cflags).split())
+if return_code != 0:
+    raise Exception("** Compilation failed. Testing aborted **")
+exec_command = ["./__tester__"]
+ 
+ output = subprocess.check_output(exec_command, universal_newlines=True)
+print(output)
+ ```
 
 
 
- *included if prefix ticked, otherwise empty string
+
  
 
 ### Params Summary
@@ -20,7 +58,7 @@ The **Scratchpad UI** functions like the **Ace UI** (hopefully a familair face b
 - `sp_ace_lang`: the language used inside in the scratchpad when answering the question, this controlls syntax highlighting for
 - `sp_run_lang`: the langauge used to run code when the run button is clicked, this should be the langauge your wrapper is written in (if applicable)
 - `sp_run_wrapper`: 
-- `sp_run_wrapper_globalextra`:
+- `sp_run_wrapper_globalextra`: set to `true` if you want 
 - `sp_html_out`: when true, the output from run will be raw HTML instead of textual
 
 To edit,
