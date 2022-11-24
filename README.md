@@ -1,16 +1,16 @@
 ## Scratchpad UI
 The **Scratchpad UI** functions like the **Ace UI** (hopefully a familair face by now), except there are two spots to enter text. The first editor is identical to the **Ace UI**. The second editor can be shown by clicking the **Scratchpad** button, this also includes a **Run Button** and a **Prefix with Answer Checkbox**. The second editor is independant: code entered is not included when marking submissions. Students can use the UI in one of two ways:
- - When prefix with answer is not checked, only the code in the scratchpad is run
- - When the prefix anser is checked, the code in the scratchpad is appended to the end of their answer, allowing testing in-browser -- without using check.
+ - When prefix with answer is not checked, only the code in the scratchpad is run -- allowing for a rough working spot to quickly check the result of code.
+ - When the prefix anser is checked, the code in the scratchpad is appended to the end of their answer -- allowing testing in-browser, without using check.
  
  The names of all buttons are changable via UI paramiters.
  
  By defualt, clicking Run will provide an escaped textual output. In some cases, e.g. programming HTML, this is not very useful. You can allow HTML output by setting `sp_html_out` to `true`.
 
-### Advanced use
+### Advanced Use: Wrappers
 Sometimes this defualt configuration won't be flexible enough... What if you want use a language installed on jobe but not supported by codeurnner, or to display Matplotlib graphs using Run? This is where you'd use a wrapper to do your bidding.
 
-A wrapper is a program used to 'wrap' your code up before it gets run using the sandbox. You write a program to go around the answer code `{{ Student_Code* }}` and the test code `{{ Scratchpad_Code }}`  The defualt configuration can be thought of as the following wrapper:
+A wrapper is a program used to 'wrap' your code up before it gets run using the sandbox. You can write a program to insert the answer code and scratchpad code into, using `{{ Student_Code* }}` and `{{ Scratchpad_Code }}` respectively. When the prefifix checkbox is unchecked `{{ Student_Code* }}` is replaced with the empty string `''`.  For example, the defualt configuration can be thought of as the following wrapper:
 ```
 {{ Student_Code* }}
 {{ Scratchpad_Code }}
@@ -29,7 +29,7 @@ for i in range(10):
  import subprocess
  
 student_answer = """{{ Student_Code }}"""
-test_code = """{{ Student_Code }}"""
+test_code = """{{ Scratchpad_Code }}"""
 all_code = student_answer + '\n' + test_code
  filename = '__tester__.c
  with open(filename, "w") as src:
@@ -44,9 +44,9 @@ exec_command = ["./__tester__"]
  output = subprocess.check_output(exec_command, universal_newlines=True)
 print(output)
  ```
+To expand on this more, you could wrap the scratchpad code inside a main function with the ansewr code outside, this might be useful for the first questions in a C course -- it would remove one thing for a beginer to remember.
 
-
-
+Ealier, the `sp_html_out` paramiter was discussed. In conjunction with a wrapper this can be used to display graphical/non-textual output in the output box. If we allow HTML output, then write a wrapper that runs the code and grabs the image, printing it as a data URI inside an HTML `<img>` tag.
 
  
 
@@ -60,5 +60,3 @@ print(output)
 - `sp_run_wrapper`: 
 - `sp_run_wrapper_globalextra`: set to `true` if you want 
 - `sp_html_out`: when true, the output from run will be raw HTML instead of textual
-
-To edit,
