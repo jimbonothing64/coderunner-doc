@@ -1,5 +1,5 @@
 ## Scratchpad UI
-The **Scratchpad UI** functions like the **Ace UI** (hopefully a familair face by now), except there are two spots to enter text. The first editor is identical to the **Ace UI**. The second editor can be shown by clicking the **Scratchpad** button, this also includes a **Run Button** and a **Prefix with Answer Checkbox**. The second editor is independant: code entered is not included when marking submissions. Students can use the UI in one of two ways:
+The **Scratchpad UI** functions like the **Ace UI** (hopefully a familair face by now), except there are two spots to enter text and it's also possible to run code without using the check button. The first editor is identical to the **Ace UI**. The second editor can be shown by clicking the **Scratchpad** button, this also includes a **Run Button** and a **Prefix with Answer Checkbox**. The second editor is independant: code entered is not included when marking submissions. Students can use the UI in one of two ways:
  - When prefix with answer is not checked, only the code in the scratchpad is run -- allowing for a rough working spot to quickly check the result of code.
  - When the prefix anser is checked, the code in the scratchpad is appended to the end of their answer -- allowing testing in-browser, without using check.
  
@@ -55,7 +55,7 @@ Ealier, the `sp_html_out` paramiter was discussed. In conjunction with a wrapper
 - `sp_name`: the display name of the scratchpad
 - `sp_button_name`: the run button text to display
 - `sp_prefix_name`: the prefix answer check text to display
-- `sp_ace_lang`: the language used inside in the scratchpad when answering the question, this controlls syntax highlighting for
+- `sp_ace_lang`: the language used inside in the scratchpad when answering the question, this controlls syntax highlighting
 - `sp_run_lang`: the langauge used to run code when the run button is clicked, this should be the langauge your wrapper is written in (if applicable)
 - `sp_run_wrapper`: 
 - `sp_run_wrapper_globalextra`: set to `true` if you want 
