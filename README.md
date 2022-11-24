@@ -11,9 +11,11 @@ The **Scratchpad UI** functions like the **Ace UI** (hopefully a familair face b
  By defualt, clicking Run will provide an escaped textual output. In some cases, e.g. programming HTML, this may not be desired. You can allow raw HTML output by setting `sp_html_out` to `true`.
 
 ### Advanced Customization: Wrappers
-Sometimes this defualt configuration won't be flexible enough... What if you want use a language installed on jobe but not supported by codeurnner, or to display Matplotlib graphs using Run? This is where you'd use a wrapper to do your bidding.
+Sometimes the defualt configuration won't be flexible enough... What if you want use a language installed on jobe but not supported by codeurnner, or to display Matplotlib graphs using Run? This is where you'd use a wrapper to do your bidding.
 
-A wrapper is a program used to 'wrap' your code up before it gets run using the sandbox. You can write a program to insert the answer code and scratchpad code into, using `{{ Student_Code* }}` and `{{ Scratchpad_Code }}` respectively. When the prefifix checkbox is unchecked `{{ Student_Code* }}` is replaced with the empty string `''`.  For example, the defualt configuration can be thought of as the following wrapper:
+A wrapper is a program used to 'wrap' your code up before it gets run using the sandbox. You can write a program to insert the answer code and scratchpad code into, using `{{ Student_Code }}` and `{{ Scratchpad_Code }}` respectively. When the prefifix checkbox is unchecked `{{ Student_Code }}` is replaced with the empty string `''`.  
+
+For example, the defualt configuration can be thought of as the following wrapper:
 ```
 {{ Student_Code* }}
 {{ Scratchpad_Code }}
