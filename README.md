@@ -53,10 +53,11 @@ To expand on this more, you could wrap the scratchpad code inside a main functio
 
 Earlier, the `sp_html_out` parameter was discussed. In conjunction with a wrapper this can be used to display graphical/non-textual output in the output box. If we allow HTML output, then write a wrapper that runs the code and grabs the image, printing it as a data URI inside an HTML `<img>` tag. For `Matplotlib`, a Python3 wrapper looks like this...
 ```
-import subprocess, base64, html, os
-code = """{{ STUDENT_ANSWER }}
-{{ TEST_CODE }}
-"""
+import subprocess, base64, html, os, tempfile
+
+if 'MPLCONFIGDIR' not in os.environ or os.environ['MPLCONFIGDIR'].startswith('/home'):
+    os.environ['MPLCONFIGDIR'] = tempfile.mkdtemp()
+
 
 def make_data_uri(filename):
     with open(filename, "br") as fin:
@@ -64,17 +65,27 @@ def make_data_uri(filename):
     contents_b64 = base64.b64encode(contents).decode("utf8")
     return "data:image/png;base64,{}".format(contents_b64)
 
-prog_to_exec = """import os, tempfile
+
+code = """{{ STUDENT_ANSWER }}
+{{ TEST_CODE }}
+"""
+
+prefix = """import os, tempfile
 os.environ["MPLCONFIGDIR"] = tempfile.mkdtemp()
 import matplotlib as _mpl
 _mpl.use("Agg")
-""" + code + """
+"""
+
+suffix = """
 figs = _mpl.pyplot.get_fignums()
 for i, fig in enumerate(figs):
     _mpl.pyplot.figure(fig)
     filename = f'image{i}.png'
     _mpl.pyplot.savefig(filename, bbox_inches='tight')
 """
+
+prog_to_exec = prefix + code + suffix
+
 with open('prog.py', 'w') as outfile:
     outfile.write(prog_to_exec)
 
