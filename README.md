@@ -93,7 +93,7 @@ result = subprocess.run(['python3', 'prog.py'], capture_output=True, text=True)
 print('<div>')
 output = result.stdout + result.stderr
 if output:
-    output = html.escape(output).replace(' ', '&nbsp;').replace('\\n', '<br>')
+    output = html.escape(output).replace(' ', '&nbsp;').replace('\n', '<br>')
     print(f'<p style="font-family:monospace;font-size:11pt;padding:5px;">{output}</p>')
 
 for fname in os.listdir():
