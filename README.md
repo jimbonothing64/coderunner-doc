@@ -13,28 +13,26 @@ The **Scratchpad UI** functions like the **Ace UI** (hopefully a familiar face b
 ### Advanced Customization: Wrappers
 Sometimes the default configuration won't be flexible enough... What if you want to use a language installed on jobe but not supported by coderunner, or to display Matplotlib graphs using Run? This is where you'd use a wrapper to do your bidding.
 
-A wrapper is a program used to 'wrap' your code up before it gets run using the sandbox. You can write a program to insert the answer code and scratchpad code into, using `{{ Student_Code }}` and `{{ Scratchpad_Code }}` respectively. When the prefix checkbox is unchecked `{{ Student_Code }}` is replaced with the empty string `''`.  
+A wrapper is a program used to 'wrap' your code up before it gets run using the sandbox. You can write a program to insert the answer code and scratchpad code into, using `{{ ANSWER_CODE }}` and `{{ SCRATCHPAD_CODE }}` respectively. When the prefix checkbox is unchecked `{{ ANSWER_CODE }}` is replaced with the empty string `''`.  
 
 For example, the default configuration can be thought of as the following wrapper:
 ```
-{{ Student_Code* }}
-{{ Scratchpad_Code }}
+{{ ANSWER_CODE }}
+{{ SCRATCHPAD_CODE }}
 ```
-*included only if prefix ticked, otherwise empty string
-
 To have some fun, why not make the scratchpad code repeat ten times per Run using python...
 ```
-{{ Student_Code }}
+{{ ANSWER_CODE }}
 for i in range(10):
-    exec('''{{ Scratchpad_Code }}''')
+    exec('''{{ SCRATCHPAD_CODE }}''')
 ```
 
  You can set the Run language, using `sp_run_lang`, this changes the language sent to the sandbox service used to run the wrapper. This means you can write your wrapper in a different language to the question. To the person answering the question this would be invisible. Below is an example of how you could run C using Python as your run language (see the multi-language question for further inspiration).
  ```
  import subprocess
  
-student_answer = """{{ Student_Code }}"""
-test_code = """{{ Scratchpad_Code }}"""
+student_answer = """{{ ANSWER_CODE }}"""
+test_code = """{{ SCRATCHPAD_CODE }}"""
 all_code = student_answer + '\n' + test_code
  filename = '__tester__.c
  with open(filename, "w") as src:
@@ -55,9 +53,6 @@ Earlier, the `sp_html_out` parameter was discussed. In conjunction with a wrappe
 ```
 import subprocess, base64, html, os, tempfile
 
-if 'MPLCONFIGDIR' not in os.environ or os.environ['MPLCONFIGDIR'].startswith('/home'):
-    os.environ['MPLCONFIGDIR'] = tempfile.mkdtemp()
-
 
 def make_data_uri(filename):
     with open(filename, "br") as fin:
@@ -66,7 +61,10 @@ def make_data_uri(filename):
     return "data:image/png;base64,{}".format(contents_b64)
 
 
-code = """{{ STUDENT_ANSWER }}
+if 'MPLCONFIGDIR' not in os.environ or os.environ['MPLCONFIGDIR'].startswith('/home'):
+    os.environ['MPLCONFIGDIR'] = tempfile.mkdtemp()
+
+code = r"""{{ STUDENT_ANSWER }}
 {{ TEST_CODE }}
 """
 
@@ -111,7 +109,6 @@ for fname in os.listdir():
 - `sp_ace_lang`: the language used inside in the scratchpad when answering the question (this controls syntax highlighting)
 - `sp_run_lang`: the langauge used to run code when the run button is clicked, this should be the langauge your wrapper is written in (if applicable)
 - `sp_run_wrapper`: the wrapper to be used by the run button:
-    - setting as `___GLOBAL_EXTRA___` will use text in global extra as the wrapper
+    - setting to `globalextra` will use text in global extra as the wrapper
     - otherwise, the string in this parameter will be used.
-- `sp_run_wrapper_globalextra`: set to `true` if you want *(this one could be redundant if using `___GLOBAL_EXTRA___` in run wrapper param)*
 - `sp_html_out`: when true, the output from run will be raw HTML instead of textual
