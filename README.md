@@ -1,33 +1,45 @@
 ## Scratchpad UI
-The **Scratchpad UI** functions like the **Ace UI** (hopefully a familiar face by now), except there are two editors for code entry. Additionally, it's also possible to run code 'in-browser' without using the check button. The first editor is identical to the **Ace UI**; the code in this area is submitted when Check is clicked. The second editor can be shown by clicking the **Scratchpad** button, this also includes a **Run Button** and a **Prefix with Answer Checkbox**. The second editor is independent: code entered is not included when marking submissions. Students can use the UI in one of two ways:
+The **Scratchpad UI** is like the **Ace UI**, but with two editors for code entry. By default, only one editor is visible and the Scratchpad is hidden -- clicking the **Scratchpad button** shows it. The Scratchpad contains a second editor, a **Run button** and a **Prefix with Answer** checkbox. Additionally, there is a help button that provides information about how to use the Scratchpad. It's possible to run code 'in-browser' using the **Run Button**:
  - When prefix with answer is not checked, only the code in the scratchpad is run -- allowing for a rough working spot to quickly check the result of code.
- - When the prefix answer is checked, the code in the scratchpad is appended to the end of their answer -- allowing testing in-browser, without using check.
+ - When the prefix answer is checked, the code in the scratchpad is appended to the code in the first editor before being run.
+
+Note: *This behavior can be modified, see wrappers...*
+
+ ### Serialisation
+ The UI serialises to JSON, with fields:
+ - `answer_code`: string containing answer code from the first editor;
+ - `test_code`: string containing answer code from the second editor;
+ - `show_hide`: `"1"` when scratchpad is visible, otherwise `""`;
+ - `prefix_ans`: `"1"` when **Prefix with Answer** is checked, otherwise `""`.
  
- It may be helpful to think of the scratchpad like a try-it box (see ace-inline-filter) with access to the question's answer code.
+ A special case: *if all fields are empty but `prefix_ans` is `'1'`, the serialisation itself is the empty string.*
  
- ### Basic Customization
- The names of all buttons are changeable via UI parameters, see below.
- 
- By default, clicking Run will provide an escaped textual output. In some cases, e.g. programming HTML, this may not be desired. You can allow raw HTML output by setting `sp_html_out` to `true`.
+### UI Parameters
+
+- `scratchpad_name`: the display name of the scratchpad, used to hide/un-hide the scratchpad.
+- `button_name`: the run button text.
+- `prefix_name`: the prefix with answer check-box label text.
+- `help_text`: the prefix with answer check-box label text
+- `sp_ace_lang`: the language used in the Ace editors (this controls syntax highlighting). (removed, ask richard if we need)
+- `run_lang`: the language used to run code when the run button is clicked, this should be the language your wrapper is written in (if applicable).
+- `wrapper_src`: the location of wrapper to be used by the run button:
+    - setting to `globalextra` will use text in global extra field, 
+    - `prototypeextra` will use the prototype extra field.
+- `html_output`: when true, the output from run will be displayed as raw HTML instead of text.
+- `params` : **THESE ARE NOT WELL DOCUMENTED**
+
 
 ### Advanced Customization: Wrappers
-Sometimes the default configuration won't be flexible enough... What if you want to use a language installed on jobe but not supported by coderunner, or to display Matplotlib graphs using Run? This is where you'd use a wrapper to do your bidding.
+Sometimes the default configuration won't be flexible enough. To run langues installed on jobe but not supported by coderunner, read standard input with run, or to display Matplotlib graphs with run requires the use of a wrapper.
 
-A wrapper is a program used to 'wrap' your code up before it gets run using the sandbox. You can write a program to insert the answer code and scratchpad code into, using `{{ ANSWER_CODE }}` and `{{ SCRATCHPAD_CODE }}` respectively. When the prefix checkbox is unchecked `{{ ANSWER_CODE }}` is replaced with the empty string `''`.  
-
-For example, the default configuration can be thought of as the following wrapper:
+A wrapper can be used to wrap code before it is run using the sandbox. You can insert the answer code and scratchpad code into the wrapper, using `{{ ANSWER_CODE }}` and `{{ SCRATCHPAD_CODE }}` respectively. If the **Prefix with Answer** checkbox is unchecked `{{ ANSWER_CODE }}` will be replaced with an empty string `''`.  The default configuration can be thought of as the following wrapper:
 ```
 {{ ANSWER_CODE }}
 {{ SCRATCHPAD_CODE }}
 ```
-To have some fun, why not make the scratchpad code repeat ten times per Run using python...
-```
-{{ ANSWER_CODE }}
-for i in range(10):
-    exec('''{{ SCRATCHPAD_CODE }}''')
-```
 
- You can set the Run language, using `sp_run_lang`, this changes the language sent to the sandbox service used to run the wrapper. This means you can write your wrapper in a different language to the question. To the person answering the question this would be invisible. Below is an example of how you could run C using Python as your run language (see the multi-language question for further inspiration).
+
+ You can set the Run language, using `sp_run_lang`, this changes the language sent to the sandbox service used to run the wrapper. This means one can write their wrapper in a different language to the question. To the person answering the question this would be invisible. Below is an example of a C program being run using Python (see the multi-language question for further inspiration):
  ```
  import subprocess
  
@@ -47,9 +59,11 @@ exec_command = ["./__tester__"]
  output = subprocess.check_output(exec_command, universal_newlines=True)
 print(output)
  ```
-To expand on this more, you could wrap the scratchpad code inside a main function with the answer code outside, this might be useful for the first questions in a C course -- by removing complexity for the first questions and lowering exploration inertia.
+To expand, it is possible to wrap the scratchpad code inside a main function, or use a modified wrapper to run unsupported code.
 
-Earlier, the `sp_html_out` parameter was discussed. In conjunction with a wrapper this can be used to display graphical/non-textual output in the output box. If we allow HTML output, then write a wrapper that runs the code and grabs the image, printing it as a data URI inside an HTML `<img>` tag. For `Matplotlib`, a Python3 wrapper looks like this...
+The `sp_html_out` parameter, in conjunction with a wrapper, can be used to display graphical/non-textual output in the output box. Using HTML output, it is possible to insert images (and more), by using a data URI inside an HTML `<img>` tag. 
+
+For `Matplotlib`, a Python3 wrapper looks like this:
 ```
 import subprocess, base64, html, os, tempfile
 
@@ -61,11 +75,8 @@ def make_data_uri(filename):
     return "data:image/png;base64,{}".format(contents_b64)
 
 
-if 'MPLCONFIGDIR' not in os.environ or os.environ['MPLCONFIGDIR'].startswith('/home'):
-    os.environ['MPLCONFIGDIR'] = tempfile.mkdtemp()
-
-code = r"""{{ STUDENT_ANSWER }}
-{{ TEST_CODE }}
+code = r"""{{ ANSWER_CODE }}
+{{ SCRATCHPAD_CODE }}
 """
 
 prefix = """import os, tempfile
@@ -98,17 +109,3 @@ for fname in os.listdir():
     if fname.endswith('png'):
         print(f'<img src="{make_data_uri(fname)}">')
 ```
-
- 
-
-### UI Parameters Reference
-
-- `sp_name`: the display name of the scratchpad (the button used to hide/un-hide the scratchpad)
-- `sp_button_name`: the run button text
-- `sp_prefix_name`: the prefix answer check-box text
-- `sp_ace_lang`: the language used inside in the scratchpad when answering the question (this controls syntax highlighting)
-- `sp_run_lang`: the langauge used to run code when the run button is clicked, this should be the langauge your wrapper is written in (if applicable)
-- `sp_run_wrapper`: the wrapper to be used by the run button:
-    - setting to `globalextra` will use text in global extra as the wrapper
-    - otherwise, the string in this parameter will be used.
-- `sp_html_out`: when true, the output from run will be raw HTML instead of textual
